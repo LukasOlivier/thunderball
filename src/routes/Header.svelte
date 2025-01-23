@@ -16,7 +16,7 @@
 				<a href="/" arial-label="Home" class="">Home </a>
 				<a href="/#info" arial-label="Info">Praktisch </a>
 				<a href="/#history" arial-label="History">Geschiedenis </a>
-				<a href="/scores" arial-label="Scores">Scores </a>
+				<a href="/tussenstand" arial-label="Tussenstand">Tussenstand </a>
 			</nav>
 		</div>
 	</div>
