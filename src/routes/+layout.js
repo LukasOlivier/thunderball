@@ -7,7 +7,8 @@ export const load = async ({ url }) => {
 	return {
 		title: 'Thunderball - KSA Izegem',
 		description: 'Thunderball is een jaarlijks evenement georganiseerd door KSA Izegem.',
-		keywords: 'KSA, Izegem, Thunderball, fuif, evenement'
+		keywords: 'KSA, Izegem, Thunderball, fuif, evenement',
+		canonical: 'https://thunderball.ksaizegem.be'
 	};
 };
 
