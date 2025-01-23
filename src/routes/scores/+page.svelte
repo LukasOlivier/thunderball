@@ -1,6 +1,6 @@
 <script>
-	import Matches from '../../components/scores/Matches.svelte';
-	import Standings from '../../components/scores/Standings.svelte';
+	import Matches from './Matches.svelte';
+	import Standings from './Standings.svelte';
 	import { fetchData } from '../../utils/fetchData.js';
 	import { onMount } from 'svelte';
 

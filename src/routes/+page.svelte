@@ -1,7 +1,7 @@
 <script>
-	import LandingHeroSection from '../components/landing/HeroSection.svelte';
-	import LandingInfoSection from '../components/landing/InfoSection.svelte';
-	import LandingHistorySection from '../components/landing/HistorySection.svelte';
+	import LandingHeroSection from './HeroSection.svelte';
+	import LandingInfoSection from './InfoSection.svelte';
+	import LandingHistorySection from './HistorySection.svelte';
 </script>
 
 <div>

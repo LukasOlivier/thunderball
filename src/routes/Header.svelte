@@ -3,7 +3,7 @@
 		<div class="flex h-16 items-center justify-center md:justify-between">
 			<a href="/" aria-label="Home">
 				<enhanced:img
-					src="/src/lib/assets/images/thunderball.webp"
+					src="$lib/assets/images/thunderball.webp"
 					alt="Thunderball Logo"
 					class="hidden h-16 w-16 object-contain md:block"
 					title="Thunderball Logo"

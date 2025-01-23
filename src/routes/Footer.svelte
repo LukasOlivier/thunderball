@@ -11,7 +11,6 @@
 			icon: AiFillFacebook,
 			link: 'https://fb.me/e/5Yy8wEytE'
 		}
-		// Add more social links as needed
 	];
 </script>
 
@@ -19,7 +18,7 @@
 	<div class="container mx-auto max-w-screen-xl px-4">
 		<div class="flex flex-col items-center justify-between md:flex-row">
 			<enhanced:img
-				src="/src/lib/assets/images/thunderball.webp"
+				src="$lib/assets/images/thunderball.webp"
 				alt="Thunderball Logo"
 				class="mb-8 h-24 w-24 object-contain md:mb-0"
 				title="Thunderball Logo"

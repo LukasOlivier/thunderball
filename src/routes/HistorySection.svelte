@@ -5,7 +5,7 @@
 	<!-- Text Content -->
 	<div class="mb-8 md:mb-0 md:w-2/3 md:pr-8">
 		<span class="text-gray text-sm font-medium uppercase tracking-wider"> Ons Verhaal </span>
-		<h2 class="text-primary mb-6 mt-4 text-3xl font-bold md:text-4xl">
+		<h2 class="mb-6 mt-4 text-3xl font-bold text-primary md:text-4xl">
 			Van Interne Traditie tot Publiek Evenement
 		</h2>
 		<p class="text-gray text-lg leading-relaxed">
@@ -19,7 +19,7 @@
 	<!-- Image -->
 	<div class="md:w-1/3">
 		<enhanced:img
-			src="/src/lib/assets/images/about.webp"
+			src="$lib/assets/images/about.webp"
 			alt="People playing soccer"
 			title="People playing soccer"
 			width="1024"
