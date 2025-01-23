@@ -1,4 +1,4 @@
-<header class="bg-primary/90 fixed left-0 right-0 top-0 z-50 backdrop-blur-sm">
+<header class="fixed left-0 right-0 top-0 z-50 bg-primary/90 backdrop-blur-sm">
 	<div class="max-w-screen-4xl container mx-auto px-4">
 		<div class="flex h-16 items-center justify-center md:justify-between">
 			<a href="/" aria-label="Home">
@@ -16,7 +16,7 @@
 				<a href="/" arial-label="Home" class="">Home </a>
 				<a href="/#info" arial-label="Info">Praktisch </a>
 				<a href="/#history" arial-label="History">Geschiedenis </a>
-				<!-- <a href="/scores" arial-label="Scores">Scores </a> -->
+				<a href="/scores" arial-label="Scores">Scores </a>
 			</nav>
 		</div>
 	</div>
