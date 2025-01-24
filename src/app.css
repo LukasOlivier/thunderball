@@ -12,6 +12,11 @@
 	font-weight: 800;
 }
 
-nav a {
-	@apply text-secondary hover:border-secondary border-b-2 border-transparent transition-colors;
+.desktop-nav a {
+	@apply border-b-2 border-transparent text-secondary transition-colors hover:border-secondary;
+}
+
+html,
+body {
+	overscroll-behavior: none; /* Disable rubber-band effect */
 }
