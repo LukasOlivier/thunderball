@@ -1,6 +1,7 @@
 <script>
 	import Matches from './Matches.svelte';
 	import Standings from './Standings.svelte';
+	import Sponsors from '../Sponsors.svelte';
 	import { fetchData } from '../../utils/fetchData.js';
 	import { onMount } from 'svelte';
 
@@ -36,5 +37,6 @@
 			<Standings standings={standingsWomen} {loading} {error} title="Competitie Vrouwen" />
 		</div>
 		<Matches {matches} {loading} {error} title="Gespeelde Wedstrijden" />
+		<Sponsors></Sponsors>
 	</div>
 </div>
