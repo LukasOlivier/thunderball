@@ -2,6 +2,7 @@
 	import LandingHeroSection from './HeroSection.svelte';
 	import LandingInfoSection from './InfoSection.svelte';
 	import LandingHistorySection from './HistorySection.svelte';
+	import Sponsors from './Sponsors.svelte';
 </script>
 
 <div>
@@ -13,4 +14,7 @@
 
 	<!-- History Section -->
 	<LandingHistorySection />
+
+	<!-- Sponsors Section -->
+	<Sponsors />
 </div>
