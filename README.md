@@ -1,38 +1,49 @@
-# sv
+# Thunderball Website
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A website for the annual Thunderball sports event organized by KSA Izegem. Built with SvelteKit and TailwindCSS. It communicates with a Google Sheet to fetch the latest information about the competition. The project includes full SEO optimization and performance improvements to reach top scores on Google Lighthouse
 
-## Creating a project
+## About the Event
 
-If you're seeing this, you've probably already done this step. Congrats!
+Thunderball is an annual sports tournament that features:
 
-```bash
-# create a new project in the current directory
-npx sv create
+- Separate competitions for men and women
+- Teams of 5-8 players (minimum age: 16 years)
+- Special prizes for supporters and teams including:
+  - Most enthusiastic supporter group award
+  - "Drinking cup" for the thirstiest team
 
-# create a new project in my-app
-npx sv create my-app
+## Technical Stack
+
+- Frontend Framework: SvelteKit
+- Styling: TailwindCSS
+- Icons: svelte-icons-pack
+- Build Tool: Vite
+- Deployment: Vercel
+
+## Development
+
+1. Install dependencies:
+
+```sh
+pnpm install
 ```
 
-## Developing
+2. Start development server:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```sh
+pnpm dev
 ```
 
-## Building
+3. Open the development server in your browser:
 
-To create a production version of your app:
-
-```bash
-npm run build
+```
+http://localhost:3000
 ```
 
-You can preview the production build with `npm run preview`.
+## Meta Information
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The site is available at https://thunderball.ksaizegem.be.
+
+## Author
+
+Lukas Olivier
