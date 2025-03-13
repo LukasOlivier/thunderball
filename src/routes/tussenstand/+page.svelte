@@ -5,23 +5,20 @@
 	import { fetchData } from '../../utils/fetchData.js';
 	import { onMount } from 'svelte';
 
-	const STANDINGS_URL =
-		'https://docs.google.com/spreadsheets/d/e/2PACX-1vTndfC3dsg5102NWxjl4lWsP4gkEcQoeZJHWwCcnRrIVR5fWMPLfwctIFWvtT70S6-eNvUmPhqAIwmO/pub?gid=0&single=true&output=csv';
-	const MATCHES_URL =
-		'https://docs.google.com/spreadsheets/d/e/2PACX-1vTndfC3dsg5102NWxjl4lWsP4gkEcQoeZJHWwCcnRrIVR5fWMPLfwctIFWvtT70S6-eNvUmPhqAIwmO/pub?gid=1209778637&single=true&output=csv';
+	const SHEETS_URL =
+		'https://docs.google.com/spreadsheets/d/e/2PACX-1vR4ZJ9230fQrGqpBw-3fOxMkCFxaT5JkU5ZcbR6wY7ITfY_O90q4k412Sn4B_dGoCCKt_EAn9uPX44D/pub?gid=0&single=true&output=csv';
 
-	export let standingsMen = [];
-	export let standingsWomen = [];
+	export let standings = [];
 	export let matches = [];
 	let loading = true;
 	let error = null;
 
 	onMount(async () => {
 		try {
-			const data = await fetchData(STANDINGS_URL, STANDINGS_URL, MATCHES_URL);
-			standingsMen = data.standingsMen;
-			standingsWomen = data.standingsWomen;
+			const data = await fetchData(SHEETS_URL);
 			matches = data.matches;
+			standings = data.standings;
+
 			loading = false;
 		} catch (err) {
 			error = err.message;
@@ -32,10 +29,7 @@
 
 <div class="container mx-auto my-32 min-h-screen px-6">
 	<div class="mx-auto max-w-screen-xl space-y-8">
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-			<Standings standings={standingsMen} {loading} {error} title="Competitie Mannen" />
-			<Standings standings={standingsWomen} {loading} {error} title="Competitie Vrouwen" />
-		</div>
+		<Standings {standings} {loading} {error} title="Competitie" />
 		<Matches {matches} {loading} {error} title="Gespeelde Wedstrijden" />
 		<Sponsors></Sponsors>
 	</div>

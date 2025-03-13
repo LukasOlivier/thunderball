@@ -1,43 +1,67 @@
-export async function fetchData(standingsMenUrl, standingsWomenUrl, matchesUrl) {
-	const [standingsMenResponse, standingsWomenResponse, matchesResponse] = await Promise.all([
-		fetch(standingsMenUrl),
-		fetch(standingsWomenUrl),
-		fetch(matchesUrl)
-	]);
+export async function fetchData(combinedDataUrl) {
+	// Now we only need to fetch a single file
+	const response = await fetch(combinedDataUrl);
 
-	if (!standingsMenResponse.ok || !standingsWomenResponse.ok || !matchesResponse.ok) {
+	if (!response.ok) {
 		throw new Error('Kon gegevens niet ophalen');
 	}
 
-	const standingsMenCsv = await standingsMenResponse.text();
-	const standingsWomenCsv = await standingsWomenResponse.text();
-	const matchesCsv = await matchesResponse.text();
+	const csvData = await response.text();
 
-	const standingsMen = parseStandings(standingsMenCsv);
-	const standingsWomen = parseStandings(standingsWomenCsv);
-	const matches = parseMatches(matchesCsv);
+	// Parse the combined CSV data
+	const { standings, matches } = parseCombinedData(csvData);
 
-	return { standingsMen, standingsWomen, matches };
+	return { standings, matches };
 }
 
-function parseStandings(csv) {
-	return csv
-		.split('\n')
-		.slice(1)
-		.map((row) => {
-			const [team, punten] = row.split(',');
-			return { team, punten: parseInt(punten) };
-		})
-		.filter((standing) => standing.team);
-}
+function parseCombinedData(csv) {
+	const lines = csv.split('\n');
+	const matches = [];
+	let standings = [];
 
-function parseMatches(csv) {
-	return csv
-		.split('\n')
+	// Find where the standings data begins (now accounting for the empty column)
+	const standingsStartIndex = lines.findIndex(
+		(line) => line.split(',')[5] === 'Ploeg' && line.split(',')[6] === 'Punten'
+	);
+
+	// Parse matches (first section)
+	const matchesData = lines.slice(1, lines.length);
+
+	matches.push(
+		...matchesData
+			.map((row) => {
+				const columns = row.split(',');
+				// Make sure we have enough columns and the first column is not empty
+				if (columns.length >= 4 && columns[0].trim()) {
+					return {
+						team1: columns[0],
+						score1: parseInt(columns[1]),
+						score2: parseInt(columns[2]),
+						team2: columns[3]
+					};
+				}
+				return null;
+			})
+			.filter((match) => match && match.team1 && match.team2)
+	);
+
+	// Parse standings from the same rows but different columns
+	standings = lines
 		.slice(1)
 		.map((row) => {
-			const [team1, team2, score] = row.split(',');
-			return { team1, team2, score };
+			const columns = row.split(',');
+			if (columns.length >= 7) {
+				const team = columns[5];
+				const punten = parseInt(columns[6]);
+
+				// Make sure we have valid data
+				if (team && !isNaN(punten)) {
+					return { team, punten };
+				}
+			}
+			return null;
 		})
-		.filter((match) => match.team1);
+		.filter((standing) => standing !== null);
+
+	return { standings, matches };
 }

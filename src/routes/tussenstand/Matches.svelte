@@ -34,10 +34,12 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
-					{#each matches as match (match.team1 + match.team2)}
+					{#each matches as match, index (index)}
 						<tr class="transition-colors hover:bg-gray-100">
 							<td class="px-6 py-4 text-gray-800">{match.team1}</td>
-							<td class="px-6 py-4 text-center font-bold text-gray-900">{match.score}</td>
+							<td class="px-6 py-4 text-center font-bold text-gray-900">
+								{match.score1} - {match.score2}
+							</td>
 							<td class="px-6 py-4 text-right text-gray-800">{match.team2}</td>
 						</tr>
 					{/each}
