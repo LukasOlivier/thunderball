@@ -1,7 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 	import Papa from 'papaparse';
-	
+	import Sponsors from '../Sponsors.svelte';
+
 	const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLT6Yn35K7oK4_KO0FvJfuERsjoTAXD96tPUd1_apQPievUFJf41rsDQKXNT9PtdaQ1V1dIwpTQ8u8/pub?gid=2030833085&single=true&output=csv';
 	export let pools = {};
 	export let matches = [];
@@ -143,12 +144,36 @@
 
 	<div class="container mx-auto px-4 py-8 max-w-6xl">
 
+		      <!-- Disclaimer Message -->
+			  <div class="mb-6 rounded-lg bg-amber-50 p-4 border border-amber-200">
+				<p class="text-amber-700">
+				  Let op: Dit schema kan nog wijzigen tot en met donderdag 27 maart zolang de inschrijvingen open zijn.
+				</p>
+			  </div>
+
 	  <!-- Loading and Error States -->
 	  {#if loading}
-		<div class="flex justify-center items-center py-16">
-		  <div class="flex flex-col items-center gap-3">
-			<div class="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-zinc-800"></div>
-			<p class="text-zinc-600 font-medium">Loading schedule...</p>
+		<div class="min-h-[600px]">
+		
+		  <!-- Loading skeleton -->
+		  <div class="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden animate-pulse">
+			<div class="h-12 bg-zinc-50 border-b border-zinc-200"></div>
+			{#each Array(6) as _, i}
+			  <div class="h-16 border-b border-zinc-100 flex">
+				<div class="w-1/6 p-4">
+				  <div class="h-4 bg-zinc-200 rounded"></div>
+				</div>
+				<div class="w-2/6 p-4">
+				  <div class="h-4 bg-zinc-200 rounded"></div>
+				</div>
+				<div class="w-2/6 p-4">
+				  <div class="h-4 bg-zinc-200 rounded"></div>
+				</div>
+				<div class="w-1/6 p-4">
+				  <div class="h-4 bg-zinc-200 rounded"></div>
+				</div>
+			  </div>
+			{/each}
 		  </div>
 		</div>
 	  {:else if error}
@@ -278,7 +303,7 @@
 			</div>
 		  </div>
 		{/if}
-
-	  {/if}
+		  			{/if}
+					<Sponsors />
 	</div>
 </div>
