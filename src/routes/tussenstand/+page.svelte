@@ -58,7 +58,12 @@
 		// Group matches by pool
 		pools = {};
 		matches.forEach(match => {
-		  const poolName = match['Pool'] || 'Unassigned';
+		  // Skip matches without a time (likely breaks)
+		  if (!match.Time) return;
+		  
+		  const poolName = match['Pool'];
+		  // Skip matches without a pool assignment
+		  if (!poolName) return;
 		  
 		  // Handle knockout stages separately
 		  if (poolName.includes('Halve finale') || poolName.includes('Finale')) {
@@ -111,22 +116,32 @@
 	
 	// Get sorted keys that separates knockout stages
 	function getSortedPoolKeys() {
-	  const regularPools = Object.keys(pools).filter(pool => 
-	    !pool.includes('Halve finale') && !pool.includes('Finale')
-	  ).sort();
-
-	  const semifinalPools = Object.keys(pools).filter(pool => 
-	    pool.includes('Halve finale')
-	  ).sort();
+	  const allPools = ['Alle'];  // Add 'All' as the first option
 	  
-	  const finalePools = Object.keys(pools).filter(pool => 
-	    pool.includes('Finale')
-	  ).sort();
+	  const regularPools = Object.keys(pools)
+	    .filter(pool => 
+	      !pool.includes('Halve finale') && 
+	      !pool.includes('Finale') && 
+	      pool !== 'Unassigned'
+	    ).sort();
 
-	  return [...regularPools, ...semifinalPools, ...finalePools];
+	  const semifinalPools = Object.keys(pools)
+	    .filter(pool => pool.includes('Halve finale'))
+	    .sort();
+	  
+	  const finalePools = Object.keys(pools)
+	    .filter(pool => pool.includes('Finale'))
+	    .sort();
+
+	  return [...allPools, ...regularPools, ...semifinalPools, ...finalePools];
 	}
 
-
+	// Get all matches sorted by time
+	function getAllMatches() {
+	  return Object.values(pools)
+	    .flat()
+	    .sort(sortByTime);
+	}
 	
 	// Check if current pool is a knockout stage
 	function isKnockoutStage(poolName) {
@@ -143,14 +158,15 @@
 
 
 	<div class="container mx-auto px-4 py-8 max-w-6xl">
-
-		      <!-- Disclaimer Message -->
+<!-- 
+		
 			  <div class="mb-6 rounded-lg bg-amber-50 p-4 border border-amber-200">
 				<p class="text-amber-700">
 				  Let op: Dit schema kan nog wijzigen tot en met donderdag 27 maart zolang de inschrijvingen open zijn.
 				</p>
 			  </div>
 
+			-->
 	  <!-- Loading and Error States -->
 	  {#if loading}
 		<div class="min-h-[600px]">
@@ -206,102 +222,140 @@
 		</div>
 
 			<!-- Active Pool Matches -->
-		{#if activePool && pools[activePool] && !isKnockoutStage(activePool)}
-		  <div class="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden">
-			
-			<div class="overflow-x-auto">
-			  <table class="w-full">
-				<thead>
-				  <tr class="bg-zinc-50 border-b border-zinc-200">
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Time</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 1</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 2</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
-					<th class="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">Score</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Field</th>
-				  </tr>
-				</thead>
-				<tbody class="divide-y divide-zinc-200">
-				  {#each pools[activePool] as match, i}
-					<tr class="hover:bg-zinc-50 transition-colors ">
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-900 font-medium">{match.Time}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 1"]}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 1"])}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 2"]}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 2"])}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-center">
-						{#if hasScore(match)}
-						  <span class="font-medium text-zinc-900">{match.Uitslag}</span>
-						{:else}
-						  <span class="text-zinc-400">—</span>
-						{/if}
-					  </td>
-					  <td class="px-6 py-4 whitespace-nowrap">
-						<span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-						  {match.Field}
-						</span>
-					  </td>
+		{#if activePool}
+		  {#if activePool === 'Alle'}
+			<div class="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden">
+			  <div class="overflow-x-auto">
+				<table class="w-full">
+				  <thead>
+					<tr class="bg-zinc-50 border-b border-zinc-200">
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Time</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Pool</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 1</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 2</th>
+					  <th class="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">Score</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Field</th>
 					</tr>
-				  {/each}
-				</tbody>
-			  </table>
-			</div>
-			
-			<!-- Empty state -->
-			{#if pools[activePool].length === 0}
-			  <div class="py-12 flex flex-col items-center justify-center text-center">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-zinc-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-				</svg>
-				<p class="text-zinc-500">No matches scheduled for this pool.</p>
+				  </thead>
+				  <tbody class="divide-y divide-zinc-200">
+					{#each getAllMatches() as match}
+					  <tr class="hover:bg-zinc-50 transition-colors">
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-900 font-medium">{match.Time}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-500">{match.Pool}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 1"]}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 2"]}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-center">
+						  {#if hasScore(match)}
+							<span class="font-medium text-zinc-900">{match.Uitslag}</span>
+						  {:else}
+							<span class="text-zinc-400">—</span>
+						  {/if}
+						</td>
+						<td class="px-6 py-4 whitespace-nowrap">
+						  <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+							{match.Field}
+						  </span>
+						</td>
+					  </tr>
+					{/each}
+				  </tbody>
+				</table>
 			  </div>
-			{/if}
-		  </div>
-		{/if}
-
-		<!-- Knockout stages when specifically selected -->
-		{#if activePool && isKnockoutStage(activePool)}	
-		  <div class="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden">
-			<div class="overflow-x-auto">
-			  <table class="w-full">
-				<thead>
-				  <tr class="bg-gray-50 border-b border-zinc-200">
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Time</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 1</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 2</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
-					<th class="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">Score</th>
-					<th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Field</th>
-				  </tr>
-				</thead>
-				<tbody class="divide-y divide-zinc-200">
-				  {#each pools[activePool] as match, i}
-					<tr class="hover:bg-zinc-50 transition-colors {hasScore(match) ? 'bg-green-50 hover:bg-green-100' : ''}">
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-900 font-medium">{match.Time}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 1"]}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 1"])}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 2"]}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 2"])}</td>
-					  <td class="px-6 py-4 whitespace-nowrap text-center">
-						{#if hasScore(match)}
-						  <span class="font-medium text-zinc-900">{match.Uitslag}</span>
-						{:else}
-						  <span class="text-zinc-400">—</span>
-						{/if}
-					  </td>
-					  <td class="px-6 py-4 whitespace-nowrap">
-						<span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-						  {match.Field}
-						</span>
-					  </td>
-					</tr>
-				  {/each}
-				</tbody>
-			  </table>
 			</div>
-		  </div>
+		  {:else if isKnockoutStage(activePool)}
+			<div class="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden">
+			  <div class="overflow-x-auto">
+				<table class="w-full">
+				  <thead>
+					<tr class="bg-gray-50 border-b border-zinc-200">
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Time</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 1</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 2</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
+					  <th class="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">Score</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Field</th>
+					</tr>
+				  </thead>
+				  <tbody class="divide-y divide-zinc-200">
+					{#each pools[activePool] as match, i}
+					  <tr class="hover:bg-zinc-50 transition-colors {hasScore(match) ? 'bg-green-50 hover:bg-green-100' : ''}">
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-900 font-medium">{match.Time}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 1"]}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 1"])}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 2"]}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 2"])}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-center">
+						  {#if hasScore(match)}
+							<span class="font-medium text-zinc-900">{match.Uitslag}</span>
+						  {:else}
+							<span class="text-zinc-400">—</span>
+						  {/if}
+						</td>
+						<td class="px-6 py-4 whitespace-nowrap">
+						  <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+							{match.Field}
+						  </span>
+						</td>
+					  </tr>
+					{/each}
+				  </tbody>
+				</table>
+			  </div>
+			</div>
+		  {:else}
+			<div class="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden">
+			
+			  <div class="overflow-x-auto">
+				<table class="w-full">
+				  <thead>
+					<tr class="bg-zinc-50 border-b border-zinc-200">
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Time</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 1</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Team 2</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Totaal punten</th>
+					  <th class="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">Score</th>
+					  <th class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Field</th>
+					</tr>
+				  </thead>
+				  <tbody class="divide-y divide-zinc-200">
+					{#each pools[activePool] as match, i}
+					  <tr class="hover:bg-zinc-50 transition-colors ">
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-900 font-medium">{match.Time}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 1"]}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 1"])}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-700">{match["Team 2"]}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-zinc-500">{getTeamPoints(match["Team 2"])}</td>
+						<td class="px-6 py-4 whitespace-nowrap text-center">
+						  {#if hasScore(match)}
+							<span class="font-medium text-zinc-900">{match.Uitslag}</span>
+						  {:else}
+							<span class="text-zinc-400">—</span>
+						  {/if}
+						</td>
+						<td class="px-6 py-4 whitespace-nowrap">
+						  <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+							{match.Field}
+						  </span>
+						</td>
+					  </tr>
+					{/each}
+				  </tbody>
+				</table>
+			  </div>
+			  
+			  <!-- Empty state -->
+			  {#if pools[activePool].length === 0}
+				<div class="py-12 flex flex-col items-center justify-center text-center">
+				  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-zinc-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+				  </svg>
+				  <p class="text-zinc-500">No matches scheduled for this pool.</p>
+				</div>
+			  {/if}
+			</div>
+		  {/if}
 		{/if}
 		  			{/if}
 					<Sponsors />
