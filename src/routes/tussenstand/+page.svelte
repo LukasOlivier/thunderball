@@ -86,20 +86,22 @@
 		  pools[poolName].sort(sortByTime);
 		});
 		
-		// Set default active pool
-		if (Object.keys(pools).length > 0) {
-		  const regularPools = Object.keys(pools).filter(pool => 
-			!pool.includes('Halve finale') && !pool.includes('Finale')
-		  );
-		  
-		  if (regularPools.length > 0) {
-			activePool = regularPools.sort()[0];
-		  } else {
-			activePool = Object.keys(pools).sort()[0];
-		  }
-		}
+		// Set default active pool only if not already set
+        if (!activePool && Object.keys(pools).length > 0) {
+          const regularPools = Object.keys(pools).filter(pool => 
+            !pool.includes('Halve finale') && !pool.includes('Finale')
+          );
+          
+          if (regularPools.length > 0) {
+            activePool = regularPools.sort()[0];
+          } else {
+            activePool = Object.keys(pools).sort()[0];
+          }
+        }
 		
 		loading = false;
+
+		console.log("CSV loaded successfully:", pools);
 	  } catch (err) {
 		error = err.message;
 		loading = false;
