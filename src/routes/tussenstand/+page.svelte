@@ -10,7 +10,8 @@
 	let loading = true;
 	let error = null;
 	let teamStandings = [];  // New variable to store team standings
-	
+	let intervalId;
+
 	// Helper function to sort by time
 	function sortByTime(a, b) {
 	  // Parse time from format like "9u" or "9u35"
@@ -33,7 +34,7 @@
 	  return timeA[1] - timeB[1];
 	}
 	
-	onMount(async () => {
+	async function fetchData() {
 	  try {
 		const response = await fetch(CSV_URL);
 		if (!response.ok) {
@@ -104,6 +105,15 @@
 		loading = false;
 		console.error("Error loading CSV:", err);
 	  }
+	}
+
+	onMount(() => {
+	  fetchData();
+	  intervalId = setInterval(fetchData, 60000); // Fetch every minute
+
+	  return () => {
+		if (intervalId) clearInterval(intervalId);
+	  };
 	});
 	
 	function setActivePool(poolName) {
