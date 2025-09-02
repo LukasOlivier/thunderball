@@ -11,12 +11,7 @@
 	let error = null;
 	let teamStandings = [];
 	let intervalId;
-	let teamPointsMap = {}; // optimized lookup map
-
-	// Environment vars used for Sheets API
-	const SPREADSHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
-	const API_KEY = import.meta.env.VITE_API_KEY;
-	const RANGE = import.meta.env.VITE_SPREADSHEET_RANGE || 'wedstrijdblad!A:Z';
+	let teamPointsMap = {};
 
 	// Helper: parse times like "9u" or "9u35" into [hours, minutes]
 	function parseTimeStr(timeStr = '') {
@@ -39,14 +34,8 @@
 
 	async function fetchData() {
 		try {
-			const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(
-				RANGE
-			)}?key=${API_KEY}`;
-
-			const response = await fetch(url, { cache: 'no-store' });
-			if (!response.ok)
-				throw new Error(`Sheets API error: ${response.status} ${response.statusText}`);
-
+			const response = await fetch('/api/sheet', { cache: 'no-store' });
+			if (!response.ok) throw new Error(`Server error: ${response.status} ${response.statusText}`);
 			const json = await response.json();
 			const [header, ...rows] = json.values || [];
 			const parsedData = rows.map((r) => {
