@@ -1,6 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-	import Papa from 'papaparse';
 	import Sponsors from '../Sponsors.svelte';
 
 	const CSV_URL =
@@ -12,44 +11,43 @@
 	let error = null;
 	let teamStandings = [];
 	let intervalId;
+	let teamPointsMap = {}; // optimized lookup map
 
-	// Helper function to sort by time
+	// Environment vars used for Sheets API
+	const SPREADSHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
+	const API_KEY = import.meta.env.VITE_API_KEY;
+	const RANGE = import.meta.env.VITE_SPREADSHEET_RANGE || 'wedstrijdblad!A:Z';
+
+	// Helper: parse times like "9u" or "9u35" into [hours, minutes]
+	function parseTimeStr(timeStr = '') {
+		const match = timeStr
+			.toString()
+			.trim()
+			.match(/(\d+)u(?:\s*(\d+))?/);
+		if (!match) return [0, 0];
+		const hours = Number(match[1]) || 0;
+		const minutes = match[2] ? Number(match[2]) : 0;
+		return [hours, minutes];
+	}
+
 	function sortByTime(a, b) {
-		// Parse time from format like "9u" or "9u35"
-		const parseTime = (timeStr) => {
-			const match = timeStr.match(/(\d+)u(\d+)?/);
-			if (!match) return [0, 0];
-			const hours = parseInt(match[1], 10);
-			const minutes = match[2] ? parseInt(match[2], 10) : 0;
-			return [hours, minutes];
-		};
-
-		const timeA = parseTime(a.Time);
-		const timeB = parseTime(b.Time);
-
-		// Compare hours first
-		if (timeA[0] !== timeB[0]) {
-			return timeA[0] - timeB[0];
-		}
-		// If hours are the same, compare minutes
-		return timeA[1] - timeB[1];
+		const [ah, am] = parseTimeStr(a?.Time);
+		const [bh, bm] = parseTimeStr(b?.Time);
+		if (ah !== bh) return ah - bh;
+		return am - bm;
 	}
 
 	async function fetchData() {
 		try {
-			// configureer deze waarden
-			const SPREADSHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
-			const API_KEY = import.meta.env.VITE_API_KEY;
-			const range = import.meta.env.VITE_SPREADSHEET_RANGE || 'wedstrijdblad!A:Z';
+			const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(
+				RANGE
+			)}?key=${API_KEY}`;
 
-			const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`;
-
-			const response = await fetch(url, { cache: 'no-store' }); // force fresh read client-side
+			const response = await fetch(url, { cache: 'no-store' });
 			if (!response.ok)
 				throw new Error(`Sheets API error: ${response.status} ${response.statusText}`);
 
 			const json = await response.json();
-			// json.values is een array van rows, eerste row = header
 			const [header, ...rows] = json.values || [];
 			const parsedData = rows.map((r) => {
 				const obj = {};
@@ -57,20 +55,24 @@
 				return obj;
 			});
 
-			// Vervang hier de bestaande verwerking met parsedData (ipv parsed.data)
 			matches = parsedData.filter((row) => row['Time']);
 
 			teamStandings = parsedData
 				.filter((row) => row['Ploegnaam'] && row['Totaal Punten'])
 				.map((row) => ({
 					name: row['Ploegnaam'],
-					points: parseInt(row['Totaal Punten'], 10) || 0
+					points: Number(row['Totaal Punten']) || 0
 				}))
 				.sort((a, b) => b.points - a.points);
 
+			// Build quick lookup map for team points (case-insensitive)
+			teamPointsMap = teamStandings.reduce((acc, t) => {
+				acc[t.name.toLowerCase()] = t.points;
+				return acc;
+			}, {});
+
 			pools = {};
 			matches.forEach((match) => {
-				if (!match.Time) return;
 				const poolName = match['Pool'];
 				if (!poolName) return;
 				if (!pools[poolName]) pools[poolName] = [];
@@ -91,7 +93,7 @@
 
 			loading = false;
 		} catch (err) {
-			error = err.message;
+			error = err?.message ?? String(err);
 			loading = false;
 			console.error('Error loading CSV:', err);
 		}
@@ -111,44 +113,47 @@
 	}
 
 	function hasScore(match) {
-		return match.Uitslag && match.Uitslag.trim() !== '';
+		return Boolean((match?.Uitslag || '').toString().trim());
 	}
 
-	// Get sorted keys that separates knockout stages
-	function getSortedPoolKeys() {
-		const allPools = ['Alle']; // Add 'All' as the first option
-
-		const regularPools = Object.keys(pools)
-			.filter(
-				(pool) =>
-					!pool.includes('Halve finale') && !pool.includes('Finale') && pool !== 'Unassigned'
-			)
-			.sort();
-
-		const semifinalPools = Object.keys(pools)
-			.filter((pool) => pool.includes('Halve finale'))
-			.sort();
-
-		const finalePools = Object.keys(pools)
-			.filter((pool) => pool.includes('Finale'))
-			.sort();
-
-		return [...allPools, ...regularPools, ...semifinalPools, ...finalePools];
-	}
-
-	// Get all matches sorted by time
 	function getAllMatches() {
+		// flatten pools to a single array and sort by time
 		return Object.values(pools).flat().sort(sortByTime);
 	}
 
-	// Check if current pool is a knockout stage
+	function getSortedPoolKeys() {
+		const allPools = ['Alle'];
+
+		const keys = Object.keys(pools);
+		const regularPools = keys
+			.filter(
+				(pool) =>
+					!pool.includes('Halve finale') &&
+					!pool.includes('Finale') &&
+					!pool.includes('Kwartfinale') &&
+					pool !== 'Unassigned'
+			)
+			.sort();
+
+		const quarterFinalPools = keys.filter((pool) => pool.includes('Kwartfinale')).sort();
+
+		const semifinalPools = keys.filter((pool) => pool.includes('Halve finale')).sort();
+
+		const finalePools = keys.filter((pool) => pool.includes('Finale')).sort();
+
+		return [...allPools, ...regularPools, ...quarterFinalPools, ...semifinalPools, ...finalePools];
+	}
+
 	function isKnockoutStage(poolName) {
-		return poolName.includes('Halve finale') || poolName.includes('Finale');
+		return (
+			poolName?.includes('Halve finale') ||
+			poolName?.includes('Finale') ||
+			poolName?.includes('Kwartfinale')
+		);
 	}
 
 	function getTeamPoints(teamName) {
-		const team = teamStandings.find((t) => t.name.toLowerCase() === teamName.toLowerCase());
-		return team ? team.points : 0;
+		return teamPointsMap?.[teamName?.toLowerCase()] ?? 0;
 	}
 </script>
 
@@ -319,11 +324,7 @@
 								</thead>
 								<tbody class="divide-y divide-zinc-200">
 									{#each pools[activePool] as match, i}
-										<tr
-											class="transition-colors hover:bg-zinc-50 {hasScore(match)
-												? 'bg-green-50 hover:bg-green-100'
-												: ''}"
-										>
+										<tr class="transition-colors hover:bg-zinc-50">
 											<td class="whitespace-nowrap px-6 py-4 font-medium text-zinc-900"
 												>{match.Time}</td
 											>
