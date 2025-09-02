@@ -155,6 +155,22 @@
 	function getTeamPoints(teamName) {
 		return teamPointsMap?.[teamName?.toLowerCase()] ?? 0;
 	}
+
+	function getLosingTeam(match) {
+		const score = (match?.Uitslag || '').toString().trim();
+		if (!score) return null;
+
+		// Parse score like "2-1" or "3-0"
+		const scoreMatch = score.match(/(\d+)\s*[-–]\s*(\d+)/);
+		if (!scoreMatch) return null;
+
+		const team1Score = parseInt(scoreMatch[1]);
+		const team2Score = parseInt(scoreMatch[2]);
+
+		if (team1Score > team2Score) return match['Team 2'];
+		if (team2Score > team1Score) return match['Team 1'];
+		return null; // tie
+	}
 </script>
 
 <div class="min-h-screen bg-zinc-50 py-16">
@@ -320,8 +336,16 @@
 											<td class="whitespace-nowrap px-6 py-4 font-medium text-zinc-900"
 												>{match.Time}</td
 											>
-											<td class="whitespace-nowrap px-6 py-4 text-zinc-700">{match['Team 1']}</td>
-											<td class="whitespace-nowrap px-6 py-4 text-zinc-700">{match['Team 2']}</td>
+											<td
+												class="whitespace-nowrap px-6 py-4 {getLosingTeam(match) === match['Team 1']
+													? 'text-red-800'
+													: 'text-zinc-700'}">{match['Team 1']}</td
+											>
+											<td
+												class="whitespace-nowrap px-6 py-4 {getLosingTeam(match) === match['Team 2']
+													? 'text-red-800'
+													: 'text-zinc-700'}">{match['Team 2']}</td
+											>
 											<td class="whitespace-nowrap px-6 py-4 text-center">
 												{#if hasScore(match)}
 													<span class="font-medium text-zinc-900">{match.Uitslag}</span>
