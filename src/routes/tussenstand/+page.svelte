@@ -9,7 +9,7 @@
 	export let activePool = null;
 	let loading = true;
 	let error = null;
-	let teamStandings = [];  // New variable to store team standings
+	let teamStandings = [];  
 	let intervalId;
 
 	// Helper function to sort by time
@@ -101,7 +101,6 @@
 		
 		loading = false;
 
-		console.log("CSV loaded successfully:", pools);
 	  } catch (err) {
 		error = err.message;
 		loading = false;
