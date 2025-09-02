@@ -302,15 +302,7 @@
 										>
 										<th
 											class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"
-											>Totaal punten</th
-										>
-										<th
-											class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"
 											>Team 2</th
-										>
-										<th
-											class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500"
-											>Totaal punten</th
 										>
 										<th
 											class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-zinc-500"
@@ -329,13 +321,7 @@
 												>{match.Time}</td
 											>
 											<td class="whitespace-nowrap px-6 py-4 text-zinc-700">{match['Team 1']}</td>
-											<td class="whitespace-nowrap px-6 py-4 text-zinc-500"
-												>{getTeamPoints(match['Team 1'])}</td
-											>
 											<td class="whitespace-nowrap px-6 py-4 text-zinc-700">{match['Team 2']}</td>
-											<td class="whitespace-nowrap px-6 py-4 text-zinc-500"
-												>{getTeamPoints(match['Team 2'])}</td
-											>
 											<td class="whitespace-nowrap px-6 py-4 text-center">
 												{#if hasScore(match)}
 													<span class="font-medium text-zinc-900">{match.Uitslag}</span>
